@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CrowdShield - Admin Dashboard</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="shortcut icon" href="/favicon.png">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #F5F7FA;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: fadeIn 0.8s ease-out 0.1s both;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .header:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+        }
+
+        .header h1 {
+            color: #0A2540;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #333333;
+        }
+
+        .admin-info {
+            text-align: right;
+        }
+
+        .admin-badge {
+            background: #27AE60;
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: inline-block;
+        }
+
+        .logout-button {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .logout-button:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+        }
+
+        .logout-button:active {
+            transform: translateY(0);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 24px;
+            background: white;
+            padding: 8px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+            border: 1px solid #e0e0e0;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            border: none;
+            background: #555555;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .tab:hover {
+            background: #666666;
+            transform: translateY(-2px);
+        }
+
+        .tab.active {
+            background: #2F80ED;
+            color: white;
+            box-shadow: 0 4px 12px rgba(47, 128, 237, 0.3);
+        }
+
+        .tab.active:hover {
+            background: #2563EB;
+        }
+
+        .panel {
+            display: none;
+            background: white;
+            padding: 32px;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+            border: 1px solid #e0e0e0;
+        }
+
+        .panel.active {
+            display: block;
+            animation: fadeInUp 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333333;
+            font-weight: 600;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 5px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #2F80ED;
+            box-shadow: 0 0 0 3px rgba(47, 128, 237, 0.1);
+            transform: translateY(-1px);
+        }
+
+        button {
+            background: #2F80ED;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 8px rgba(47, 128, 237, 0.3);
+        }
+
+        button:hover {
+            background: #2563EB;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(47, 128, 237, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .stat-card {
+            padding: 20px;
+            background: linear-gradient(135deg, #0A2540 0%, #2F80ED 100%);
+            border-radius: 10px;
+            color: white;
+            text-align: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+
+        .stat-card h3 {
+            font-size: 32px;
+            margin-bottom: 5px;
+        }
+
+        .stat-card p {
+            opacity: 0.9;
+        }
+
+        .content-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            margin-top: 20px;
+        }
+
+        .content-item {
+            padding: 24px;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            margin-bottom: 16px;
+        }
+
+        .content-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            border-color: #2F80ED;
+        }
+
+        .content-item.flagged {
+            border-left: 4px solid #dc3545;
+            background: linear-gradient(to right, #fff5f5 0%, white 4%);
+        }
+
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s ease;
+            margin-left: auto;
+        }
+
+        .delete-btn:hover {
+            background: #c82333;
+            transform: scale(1.05);
+        }
+
+        .delete-btn:active {
+            transform: scale(0.95);
+        }
+
+        .content-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .content-item h4 {
+            margin-bottom: 16px;
+            color: #0A2540;
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        .content-item .content-id {
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 12px;
+            color: #666;
+            word-break: break-all;
+        }
+
+        .content-item .content-meta {
+            display: flex;
+            gap: 24px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .content-item .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            color: #666;
+        }
+
+        .content-item .meta-item strong {
+            color: #333333;
+            font-weight: 600;
+        }
+
+        .content-item .preview-text {
+            background: #F5F7FA;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #333333;
+            border-left: 3px solid #2F80ED;
+        }
+
+        .status {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 700;
+            margin: 0;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .status.PENDING {
+            background: #ffc107;
+            color: #000;
+        }
+
+        .status.PROCESSING {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .status.SAFE {
+            background: #27AE60;
+            color: white;
+        }
+
+        .status.FLAGGED {
+            background: #dc3545;
+            color: white;
+        }
+
+        .scores {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+            flex-wrap: wrap;
+        }
+
+        .score-item {
+            flex: 1;
+            min-width: 120px;
+            padding: 16px;
+            background: linear-gradient(135deg, #F5F7FA 0%, #ffffff 100%);
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            text-align: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .score-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: #2F80ED;
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .score-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+            border-color: #2F80ED;
+        }
+
+        .score-item:hover::before {
+            transform: scaleX(1);
+        }
+
+        .score-item .label {
+            font-size: 11px;
+            color: #666;
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 600;
+        }
+
+        .score-item .value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #0A2540;
+            line-height: 1;
+        }
+
+        .score-item.high .value {
+            color: #dc3545;
+        }
+
+        .score-item.medium .value {
+            color: #ff9800;
+        }
+
+        .score-item.low .value {
+            color: #27AE60;
+        }
+
+        .rules-display {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .rule-item {
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 5px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #333333;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+            animation: shake 0.5s ease-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+            animation: fadeInUp 0.4s ease-out;
+        }
+
+        .pagination {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+
+        .pagination button {
+            padding: 8px 16px;
+        }
+
+        .login-container {
+            max-width: 400px;
+            margin: 100px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: fadeInScale 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        .login-container h2 {
+            margin-bottom: 20px;
+            color: #0A2540;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="mainContainer" style="display: none;">
+        <div class="header">
+            <div>
+                <h1>CrowdShield</h1>
+                <p>Content Moderation Dashboard</p>
+            </div>
+            <div class="admin-info">
+                <div class="admin-badge">👤 Admin: <span id="adminUsername"></span></div>
+                <button class="logout-button" onclick="logout()">Logout</button>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab active" onclick="showPanel('dashboard')">Dashboard</button>
+            <button class="tab" onclick="showPanel('content')">All Content</button>
+            <button class="tab" onclick="showPanel('flagged')">Flagged Content</button>
+            <button class="tab" onclick="showPanel('rules')">Rules</button>
+        </div>
+
+        <!-- Dashboard Panel -->
+        <div id="dashboard" class="panel active">
+            <h2>Admin Dashboard</h2>
+            <div id="dashboardStats"></div>
+        </div>
+
+        <!-- All Content Panel -->
+        <div id="content" class="panel">
+            <h2>All Content</h2>
+            <div style="margin-bottom: 20px;">
+                <label>Filter by Status:</label>
+                <select id="statusFilter" onchange="loadAllContent()" style="width: 200px; display: inline-block; margin-left: 10px;">
+                    <option value="">All</option>
+                    <option value="PENDING">PENDING</option>
+                    <option value="PROCESSING">PROCESSING</option>
+                    <option value="SAFE">SAFE</option>
+                    <option value="FLAGGED">FLAGGED</option>
+                </select>
+            </div>
+            <div id="contentList"></div>
+            <div class="pagination" id="contentPagination"></div>
+        </div>
+
+        <!-- Flagged Content Panel -->
+        <div id="flagged" class="panel">
+            <h2>Flagged Content</h2>
+            <button onclick="loadFlagged()" style="margin-bottom: 20px;">Refresh List</button>
+            <div id="flaggedResult"></div>
+        </div>
+
+        <!-- Rules Panel -->
+        <div id="rules" class="panel">
+            <h2>Moderation Rules</h2>
+            <button onclick="loadRules()" style="margin-bottom: 20px;">Load Current Rules</button>
+            <div id="rulesResult"></div>
+            <h3 style="margin-top: 30px;">Update Rules</h3>
+            <form onsubmit="updateRules(event)">
+                <div class="rules-display">
+                    <div class="form-group">
+                        <label>Toxicity Threshold</label>
+                        <input type="number" id="toxicity" step="0.1" min="0" max="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Hate Threshold</label>
+                        <input type="number" id="hate" step="0.1" min="0" max="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Sexual Threshold</label>
+                        <input type="number" id="sexual" step="0.1" min="0" max="1" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Violence Threshold</label>
+                        <input type="number" id="violence" step="0.1" min="0" max="1" required>
+                    </div>
+                </div>
+                <button type="submit">Update Rules</button>
+            </form>
+            <div id="rulesUpdateResult"></div>
+        </div>
+    </div>
+
+    <!-- Login Form -->
+    <div class="login-container" id="loginContainer">
+        <h2>Admin Login</h2>
+        <form onsubmit="login(event)">
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" id="loginUsername" required placeholder="Enter username">
+            </div>
+            <div class="form-group">
+                <label>Password</label>
+                <input type="password" id="loginPassword" required placeholder="Enter password">
+            </div>
+            <button type="submit" style="width: 100%;">Login</button>
+            <div id="loginError" style="display: none;" class="error"></div>
+        </form>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080';
+        let jwtToken = null;
+        let currentPage = 0;
+
+        // Check if already logged in
+        window.onload = function() {
+            const token = localStorage.getItem('adminToken');
+            if (token) {
+                jwtToken = token;
+                checkAuthStatus();
+            }
+        };
+
+        function getAuthHeaders() {
+            return {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${jwtToken}`
+            };
+        }
+
+        function checkAuthStatus() {
+            fetch(`${API_BASE}/api/admin/auth/status`, {
+                headers: getAuthHeaders()
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data && data.authenticated) {
+                    document.getElementById('adminUsername').textContent = data.username || 'Admin';
+                    document.getElementById('loginContainer').style.display = 'none';
+                    document.getElementById('mainContainer').style.display = 'block';
+                    loadDashboardStats();
+                } else {
+                    localStorage.removeItem('adminToken');
+                    jwtToken = null;
+                }
+            })
+            .catch(() => {
+                localStorage.removeItem('adminToken');
+                jwtToken = null;
+            });
+        }
+
+        function login(event) {
+            event.preventDefault();
+            const username = document.getElementById('loginUsername').value;
+            const password = document.getElementById('loginPassword').value;
+
+            fetch(`${API_BASE}/api/admin/auth/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.authenticated && data.token) {
+                    jwtToken = data.token;
+                    localStorage.setItem('adminToken', jwtToken);
+                    document.getElementById('adminUsername').textContent = username;
+                    document.getElementById('loginContainer').style.display = 'none';
+                    document.getElementById('mainContainer').style.display = 'block';
+                    loadDashboardStats();
+                } else {
+                    document.getElementById('loginError').textContent = data.message || 'Invalid credentials';
+                    document.getElementById('loginError').style.display = 'block';
+                }
+            })
+            .catch(error => {
+                document.getElementById('loginError').textContent = 'Login failed: ' + error.message;
+                document.getElementById('loginError').style.display = 'block';
+            });
+        }
+
+        function logout() {
+            localStorage.removeItem('adminToken');
+            jwtToken = null;
+            document.getElementById('loginContainer').style.display = 'block';
+            document.getElementById('mainContainer').style.display = 'none';
+            document.getElementById('loginUsername').value = '';
+            document.getElementById('loginPassword').value = '';
+        }
+
+        function showPanel(panelName) {
+            document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.getElementById(panelName).classList.add('active');
+            event.target.classList.add('active');
+
+            if (panelName === 'dashboard') {
+                loadDashboardStats();
+            } else if (panelName === 'content') {
+                loadAllContent();
+            } else if (panelName === 'flagged') {
+                loadFlagged();
+            }
+        }
+
+        function loadDashboardStats() {
+            fetch(`${API_BASE}/api/admin/dashboard/statistics`, {
+                headers: getAuthHeaders()
+            })
+            .then(res => {
+                if (res.status === 401) {
+                    logout();
+                    return;
+                }
+                return res.json();
+            })
+            .then(data => {
+                if (data) {
+                    document.getElementById('dashboardStats').innerHTML = `
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <h3>${data.total || 0}</h3>
+                                <p>Total Content</p>
+                            </div>
+                            <div class="stat-card">
+                                <h3>${data.pending || 0}</h3>
+                                <p>Pending</p>
+                            </div>
+                            <div class="stat-card">
+                                <h3>${data.processing || 0}</h3>
+                                <p>Processing</p>
+                            </div>
+                            <div class="stat-card">
+                                <h3>${data.safe || 0}</h3>
+                                <p>Safe</p>
+                            </div>
+                            <div class="stat-card">
+                                <h3>${data.flagged || 0}</h3>
+                                <p>Flagged</p>
+                            </div>
+                            <div class="stat-card">
+                                <h3>${data.error || 0}</h3>
+                                <p>Errors</p>
+                            </div>
+                        </div>
+                    `;
+                }
+            })
+            .catch(error => {
+                document.getElementById('dashboardStats').innerHTML = `<div class="error">Error loading statistics: ${error.message}</div>`;
+            });
+        }
+
+        function loadAllContent(page = 0) {
+            currentPage = page;
+            const status = document.getElementById('statusFilter').value;
+            const url = `${API_BASE}/api/admin/dashboard/content?page=${page}&size=20${status ? '&status=' + status : ''}`;
+            
+            fetch(url, {
+                headers: getAuthHeaders()
+            })
+            .then(res => {
+                if (res.status === 401) {
+                    logout();
+                    return;
+                }
+                return res.json();
+            })
+            .then(data => {
+                if (data) {
+                    let html = '<div class="content-list">';
+                    data.content.forEach(item => {
+                        const isFlagged = item.status === 'FLAGGED';
+                        const toxicity = item.scores ? item.scores.toxicity : 0;
+                        const hate = item.scores ? item.scores.hate : 0;
+                        const sexual = item.scores ? item.scores.sexual : 0;
+                        const violence = item.scores ? item.scores.violence : 0;
+                        
+                        const getScoreClass = (score) => {
+                            if (score >= 0.7) return 'high';
+                            if (score >= 0.4) return 'medium';
+                            return 'low';
+                        };
+                        
+                        html += `
+                            <div class="content-item ${isFlagged ? 'flagged' : ''}">
+                                <h4 class="content-id">${item.contentId}</h4>
+                                <div class="content-meta">
+                                    <div class="meta-item">
+                                        <strong>User:</strong> <span>${item.userId}</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <strong>Type:</strong> <span>${item.contentType || 'TEXT'}</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <strong>Status:</strong> <span class="status ${item.status}">${item.status}</span>
+                                    </div>
+                                    ${item.createdAt ? `
+                                    <div class="meta-item">
+                                        <strong>Created:</strong> <span>${new Date(item.createdAt).toLocaleString()}</span>
+                                    </div>
+                                    ` : ''}
+                                </div>
+                                ${item.preview ? `
+                                <div class="preview-text">${item.preview}</div>
+                                ` : ''}
+                                ${item.scores ? `
+                                    <div class="scores">
+                                        <div class="score-item ${getScoreClass(toxicity)}">
+                                            <div class="label">Toxicity</div>
+                                            <div class="value">${(toxicity * 100).toFixed(1)}%</div>
+                                        </div>
+                                        <div class="score-item ${getScoreClass(hate)}">
+                                            <div class="label">Hate</div>
+                                            <div class="value">${(hate * 100).toFixed(1)}%</div>
+                                        </div>
+                                        <div class="score-item ${getScoreClass(sexual)}">
+                                            <div class="label">Sexual</div>
+                                            <div class="value">${(sexual * 100).toFixed(1)}%</div>
+                                        </div>
+                                        <div class="score-item ${getScoreClass(violence)}">
+                                            <div class="label">Violence</div>
+                                            <div class="value">${(violence * 100).toFixed(1)}%</div>
+                                        </div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+
+                    document.getElementById('contentList').innerHTML = html;
+
+                    let paginationHtml = '';
+                    if (data.totalPages > 1) {
+                        if (currentPage > 0) {
+                            paginationHtml += `<button onclick="loadAllContent(${currentPage - 1})">Previous</button>`;
+                        }
+                        paginationHtml += `<span style="padding: 8px 16px;">Page ${currentPage + 1} of ${data.totalPages}</span>`;
+                        if (currentPage < data.totalPages - 1) {
+                            paginationHtml += `<button onclick="loadAllContent(${currentPage + 1})">Next</button>`;
+                        }
+                    }
+                    document.getElementById('contentPagination').innerHTML = paginationHtml;
+                }
+            })
+            .catch(error => {
+                document.getElementById('contentList').innerHTML = `<div class="error">Error loading content: ${error.message}</div>`;
+            });
+        }
+
+        async function loadFlagged() {
+            const resultDiv = document.getElementById('flaggedResult');
+            resultDiv.innerHTML = '<div class="loading">Loading flagged content...</div>';
+
+            try {
+                const response = await fetch(`${API_BASE}/api/admin/flagged`, {
+                    headers: getAuthHeaders()
+                });
+
+                if (response.status === 401) {
+                    logout();
+                    return;
+                }
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    if (data.length === 0) {
+                        resultDiv.innerHTML = '<div class="success">No flagged content found.</div>';
+                        return;
+                    }
+
+                    let html = '<div class="content-list">';
+                    data.forEach(item => {
+                        const toxicity = item.scores ? item.scores.toxicity : 0;
+                        const hate = item.scores ? item.scores.hate : 0;
+                        const sexual = item.scores ? item.scores.sexual : 0;
+                        const violence = item.scores ? item.scores.violence : 0;
+                        
+                        const getScoreClass = (score) => {
+                            if (score >= 0.7) return 'high';
+                            if (score >= 0.4) return 'medium';
+                            return 'low';
+                        };
+                        
+                        html += `
+                            <div class="content-item flagged" id="content-${item.contentId}">
+                                <div class="content-item-header">
+                                    <h4 class="content-id">${item.contentId}</h4>
+                                    <button class="delete-btn" onclick="deleteContent('${item.contentId}')" title="Delete this content">
+                                        🗑️ Delete
+                                    </button>
+                                </div>
+                                <div class="content-meta">
+                                    <div class="meta-item">
+                                        <strong>User:</strong> <span>${item.userId}</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <strong>Type:</strong> <span>${item.type || 'TEXT'}</span>
+                                    </div>
+                                    <div class="meta-item">
+                                        <strong>Status:</strong> <span class="status ${item.status}">${item.status}</span>
+                                    </div>
+                                </div>
+                                ${item.preview ? `
+                                <div class="preview-text">${item.preview}</div>
+                                ` : ''}
+                                ${item.scores ? `
+                                    <div class="scores">
+                                        <div class="score-item ${getScoreClass(toxicity)}">
+                                            <div class="label">Toxicity</div>
+                                            <div class="value">${(toxicity * 100).toFixed(1)}%</div>
+                                        </div>
+                                        <div class="score-item ${getScoreClass(hate)}">
+                                            <div class="label">Hate</div>
+                                            <div class="value">${(hate * 100).toFixed(1)}%</div>
+                                        </div>
+                                        <div class="score-item ${getScoreClass(sexual)}">
+                                            <div class="label">Sexual</div>
+                                            <div class="value">${(sexual * 100).toFixed(1)}%</div>
+                                        </div>
+                                        <div class="score-item ${getScoreClass(violence)}">
+                                            <div class="label">Violence</div>
+                                            <div class="value">${(violence * 100).toFixed(1)}%</div>
+                                        </div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `;
+                    });
+                    html += '</div>';
+                    resultDiv.innerHTML = html;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">Error loading flagged content</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            }
+        }
+
+        // Deletes a content item after confirmation
+        async function deleteContent(contentId) {
+            // Show confirmation alert
+            const confirmed = confirm('Are you sure you want to delete this content? This action cannot be undone.');
+            
+            if (!confirmed) {
+                return; // User cancelled
+            }
+
+            try {
+                const token = localStorage.getItem('adminToken');
+                const response = await fetch(`${API_BASE}/api/admin/content/${contentId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    // Remove the content item from the UI with fade out animation
+                    const contentElement = document.getElementById(`content-${contentId}`);
+                    if (contentElement) {
+                        contentElement.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+                        contentElement.style.opacity = '0';
+                        contentElement.style.transform = 'translateX(-20px)';
+                        setTimeout(() => {
+                            contentElement.remove();
+                            // Reload the flagged list to update the count
+                            loadFlagged();
+                        }, 300);
+                    }
+                    
+                    // Show success message
+                    const resultDiv = document.getElementById('flaggedResult');
+                    const successMsg = document.createElement('div');
+                    successMsg.className = 'success';
+                    successMsg.textContent = 'Content deleted successfully';
+                    successMsg.style.marginBottom = '10px';
+                    resultDiv.insertBefore(successMsg, resultDiv.firstChild);
+                    
+                    // Remove success message after 3 seconds
+                    setTimeout(() => {
+                        successMsg.remove();
+                    }, 3000);
+                } else {
+                    const error = await response.json();
+                    alert(`Error deleting content: ${error.message || 'Unknown error'}`);
+                }
+            } catch (error) {
+                console.error('Error deleting content:', error);
+                alert('Error deleting content. Please try again.');
+            }
+        }
+
+        async function loadRules() {
+            const resultDiv = document.getElementById('rulesResult');
+            resultDiv.innerHTML = '<div class="loading">Loading rules...</div>';
+
+            try {
+                const response = await fetch(`${API_BASE}/api/rules`);
+                const data = await response.json();
+
+                if (response.ok) {
+                    document.getElementById('toxicity').value = data.toxicityThreshold;
+                    document.getElementById('hate').value = data.hateThreshold;
+                    document.getElementById('sexual').value = data.sexualThreshold;
+                    document.getElementById('violence').value = data.violenceThreshold;
+
+                    resultDiv.innerHTML = `
+                        <div class="rules-display">
+                            <div class="rule-item">
+                                <strong>Toxicity:</strong> ${data.toxicityThreshold}
+                            </div>
+                            <div class="rule-item">
+                                <strong>Hate:</strong> ${data.hateThreshold}
+                            </div>
+                            <div class="rule-item">
+                                <strong>Sexual:</strong> ${data.sexualThreshold}
+                            </div>
+                            <div class="rule-item">
+                                <strong>Violence:</strong> ${data.violenceThreshold}
+                            </div>
+                        </div>
+                    `;
+                } else {
+                    resultDiv.innerHTML = `<div class="error">Error loading rules</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            }
+        }
+
+        async function updateRules(event) {
+            event.preventDefault();
+            const resultDiv = document.getElementById('rulesUpdateResult');
+            resultDiv.innerHTML = '<div class="loading">Updating rules...</div>';
+
+            const body = {
+                toxicityThreshold: parseFloat(document.getElementById('toxicity').value),
+                hateThreshold: parseFloat(document.getElementById('hate').value),
+                sexualThreshold: parseFloat(document.getElementById('sexual').value),
+                violenceThreshold: parseFloat(document.getElementById('violence').value)
+            };
+
+            try {
+                const response = await fetch(`${API_BASE}/api/rules`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    resultDiv.innerHTML = '<div class="success">✅ Rules updated successfully!</div>';
+                    loadRules();
+                } else {
+                    resultDiv.innerHTML = `<div class="error">Error: ${data.message || 'Update failed'}</div>`;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `<div class="error">Error: ${error.message}</div>`;
+            }
+        }
+    </script>
+</body>
+</html>
+

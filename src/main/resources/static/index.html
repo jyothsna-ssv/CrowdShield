@@ -1,0 +1,910 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CrowdShield</title>
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="shortcut icon" href="/favicon.png">
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #F5F7FA;
+            min-height: 100vh;
+            padding: 20px;
+            color: #333333;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .header {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+            text-align: center;
+            animation: fadeIn 0.8s ease-out 0.1s both;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .header h1 {
+            font-size: 42px;
+            color: #0A2540;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        .header p {
+            color: #333333;
+            font-size: 18px;
+        }
+
+        .form-container {
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: fadeIn 0.8s ease-out 0.2s both;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .form-container:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 25px 70px rgba(0,0,0,0.35);
+        }
+
+        .form-container h2 {
+            font-size: 28px;
+            margin-bottom: 30px;
+            color: #333333;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: #333333;
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 14px 18px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: all 0.3s;
+            font-family: inherit;
+        }
+
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #2F80ED;
+            box-shadow: 0 0 0 3px rgba(47, 128, 237, 0.1);
+            transform: translateY(-1px);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+            line-height: 1.6;
+        }
+
+        button {
+            background: linear-gradient(135deg, #0A2540 0%, #2F80ED 100%);
+            color: white;
+            border: none;
+            padding: 16px 32px;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            width: 100%;
+            box-shadow: 0 4px 15px rgba(10, 37, 64, 0.4);
+            position: relative;
+            overflow: hidden;
+        }
+
+        button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        button:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(47, 128, 237, 0.5);
+        }
+
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 10px rgba(10, 37, 64, 0.4);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .result-container {
+            margin-top: 30px;
+            animation: fadeInUp 0.5s ease-out;
+        }
+
+        .analyzing-card {
+            background: linear-gradient(135deg, #0A2540 0%, #2F80ED 100%);
+            border-radius: 16px;
+            padding: 40px;
+            color: white;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: fadeInScale 0.4s ease-out;
+        }
+
+        @keyframes fadeInScale {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .analyzing-card h3 {
+            font-size: 24px;
+            margin-bottom: 20px;
+            font-weight: 600;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.2);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            animation: spin 1s cubic-bezier(0.5, 0, 0.5, 1) infinite;
+            margin: 0 auto 25px;
+            position: relative;
+        }
+
+        .spinner::after {
+            content: '';
+            position: absolute;
+            top: -4px;
+            left: -4px;
+            right: -4px;
+            bottom: -4px;
+            border: 4px solid transparent;
+            border-top: 4px solid rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            animation: spin 1.5s cubic-bezier(0.5, 0, 0.5, 1) infinite reverse;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .progress-container {
+            margin: 30px 0;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 12px;
+            padding: 25px;
+            backdrop-filter: blur(10px);
+        }
+
+        .progress-label {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .progress-percentage {
+            font-size: 28px;
+            font-weight: 700;
+            transition: transform 0.3s ease;
+        }
+
+        .progress-percentage.animating {
+            animation: pulse 0.5s ease-out;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .progress-bar-wrapper {
+            width: 100%;
+            height: 35px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 18px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar {
+            height: 100%;
+            border-radius: 18px;
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1), background 0.5s ease;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-bar::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            bottom: 0;
+            right: 0;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(255, 255, 255, 0.3),
+                transparent
+            );
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% {
+                transform: translateX(-100%);
+            }
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        .progress-bar.PENDING {
+            background: linear-gradient(90deg, #ffc107 0%, #ff9800 100%);
+        }
+
+        .progress-bar.PROCESSING {
+            background: linear-gradient(90deg, #2F80ED 0%, #2563EB 100%);
+        }
+
+        .progress-bar.AI_COMPLETED {
+            background: linear-gradient(90deg, #0A2540 0%, #2F80ED 100%);
+        }
+
+        .progress-bar.DONE.SAFE {
+            background: linear-gradient(90deg, #27AE60 0%, #229954 100%);
+        }
+
+        .progress-bar.DONE.FLAGGED {
+            background: linear-gradient(90deg, #dc3545 0%, #c82333 100%);
+        }
+
+        .result-card {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: slideInFade 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .result-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.25);
+        }
+
+        @keyframes slideInFade {
+            from {
+                opacity: 0;
+                transform: translateY(30px) scale(0.98);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        .result-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+
+        .result-title {
+            font-size: 32px;
+            font-weight: 700;
+            margin-bottom: 10px;
+        }
+
+        .result-title.safe {
+            color: #27AE60;
+            animation: statusPulse 0.6s ease-out;
+        }
+
+        .result-title.flagged {
+            color: #dc3545;
+            animation: statusPulse 0.6s ease-out;
+        }
+
+        @keyframes statusPulse {
+            0% {
+                opacity: 0;
+                transform: scale(0.9);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .result-message {
+            font-size: 18px;
+            color: #333333;
+            margin-bottom: 30px;
+        }
+
+        .scores-grid {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            justify-content: space-between;
+        }
+
+        .score-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: fadeInUp 0.5s ease-out;
+            animation-fill-mode: both;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .score-card:nth-child(1) { animation-delay: 0.1s; }
+        .score-card:nth-child(2) { animation-delay: 0.2s; }
+        .score-card:nth-child(3) { animation-delay: 0.3s; }
+        .score-card:nth-child(4) { animation-delay: 0.4s; }
+
+        .score-card:hover {
+            transform: translateY(-5px) scale(1.02);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            background: white;
+        }
+
+        .score-label {
+            font-size: 12px;
+            color: #333333;
+            margin-bottom: 8px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .score-value {
+            font-size: 28px;
+            font-weight: 700;
+            color: #333333;
+        }
+
+        .score-value.high {
+            color: #dc3545;
+        }
+
+        .score-value.medium {
+            color: #ffc107;
+        }
+
+        .score-value.low {
+            color: #27AE60;
+        }
+
+        .error-card {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 12px;
+            padding: 25px;
+            color: #856404;
+            animation: shake 0.5s ease-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+            20%, 40%, 60%, 80% { transform: translateX(5px); }
+        }
+
+        .error-card h4 {
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+
+        .content-id {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 12px;
+            color: #333333;
+            word-break: break-all;
+            text-align: center;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 14px;
+            animation: fadeIn 1s ease-out 0.4s both;
+        }
+
+        .footer a {
+            color: white;
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .footer a::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: white;
+            transition: width 0.3s ease;
+        }
+
+        .footer a:hover::after {
+            width: 100%;
+        }
+
+        .footer a:hover {
+            text-decoration: none;
+            opacity: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>CrowdShield</h1>
+            <p>AI-Powered Content Moderation</p>
+        </div>
+
+        <div class="form-container">
+            <h2>Check Your Content</h2>
+            <p style="color: #666; margin-bottom: 30px; font-size: 16px;">
+                Submit your text or image to get instant moderation results. Our AI analyzes content for toxicity, hate speech, sexual content, and violence.
+            </p>
+            
+            <form id="submitForm" onsubmit="submitContent(event)">
+                <div class="form-group">
+                    <label>Content Type</label>
+                    <select id="contentType" onchange="toggleContentInput()">
+                        <option value="text">Text Content</option>
+                        <option value="image">Image URL</option>
+                    </select>
+                </div>
+                <div class="form-group" id="textGroup">
+                    <label>Enter Text to Moderate</label>
+                    <textarea id="textContent" placeholder="Type or paste your text here..." required></textarea>
+                </div>
+                <div class="form-group" id="imageGroup" style="display: none;">
+                    <label>Image URL</label>
+                    <input type="url" id="imageUrl" placeholder="https://example.com/image.jpg">
+                </div>
+                <button type="submit" id="submitBtn">
+                    <span id="submitBtnText">Analyze Content</span>
+                </button>
+            </form>
+            <div id="submitResult" class="result-container"></div>
+        </div>
+
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080';
+        const WS_BASE = 'ws://localhost:8080';
+        let pollingInterval = null;
+        let stompClient = null;
+        let currentContentId = null;
+        let currentProgress = 0;
+
+        const stageProgress = {
+            'PENDING': 10,
+            'QUEUED': 30,
+            'PROCESSING': 60,
+            'AI_COMPLETED': 90,
+            'DONE': 100
+        };
+
+        const stageLabels = {
+            'PENDING': 'Submitting Content',
+            'QUEUED': 'Queued for Analysis',
+            'PROCESSING': 'Analyzing Content',
+            'AI_COMPLETED': 'AI Analysis Complete',
+            'DONE': 'Moderation Complete'
+        };
+
+        function toggleContentInput() {
+            const type = document.getElementById('contentType').value;
+            const textGroup = document.getElementById('textGroup');
+            const imageGroup = document.getElementById('imageGroup');
+            const textContent = document.getElementById('textContent');
+            const imageUrl = document.getElementById('imageUrl');
+            
+            if (type === 'text') {
+                textGroup.style.display = 'block';
+                imageGroup.style.display = 'none';
+                textContent.setAttribute('required', 'required');
+                imageUrl.removeAttribute('required');
+            } else {
+                textGroup.style.display = 'none';
+                imageGroup.style.display = 'block';
+                textContent.removeAttribute('required');
+                imageUrl.setAttribute('required', 'required');
+            }
+        }
+
+        function stopPolling() {
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+                pollingInterval = null;
+            }
+        }
+
+        function disconnectWebSocket() {
+            if (stompClient && stompClient.connected) {
+                stompClient.disconnect();
+            }
+            stompClient = null;
+        }
+
+        function connectWebSocket(contentId) {
+            currentContentId = contentId;
+            try {
+                const socket = new SockJS(WS_BASE + '/ws');
+                stompClient = Stomp.over(socket);
+                stompClient.connect({}, function(frame) {
+                    stompClient.subscribe('/topic/status/' + contentId, function(message) {
+                        const data = JSON.parse(message.body);
+                        handleWebSocketMessage(data);
+                    });
+                }, function(error) {
+                    fallbackToPolling(contentId);
+                });
+            } catch (error) {
+                fallbackToPolling(contentId);
+            }
+        }
+
+        function handleWebSocketMessage(data) {
+            const stage = data.stage || data.status || 'PENDING';
+            const progress = data.progress || stageProgress[stage] || 0;
+            const status = data.status || stage;
+
+            if (progress > currentProgress) {
+                currentProgress = progress;
+                updateProgressBar(stage, progress, status);
+            }
+
+            if (stage === 'DONE' || status === 'SAFE' || status === 'FLAGGED') {
+                disconnectWebSocket();
+                stopPolling();
+                setTimeout(() => {
+                    fetchFinalResults(currentContentId);
+                }, 500);
+            }
+
+            if (stage === 'ERROR' || data.error) {
+                disconnectWebSocket();
+                stopPolling();
+                showError(data.error || 'An error occurred during moderation');
+            }
+        }
+
+        function updateProgressBar(stage, progress, status) {
+            const resultDiv = document.getElementById('submitResult');
+            const stageLabel = stageLabels[stage] || stage;
+            const progressBarClass = stage === 'DONE' ? `DONE ${status}` : stage;
+
+            resultDiv.innerHTML = `
+                <div class="analyzing-card">
+                    <div class="spinner"></div>
+                    <h3>Analyzing Your Content</h3>
+                    <p style="opacity: 0.9; margin-bottom: 20px;">This usually takes 5-8 seconds</p>
+                    <div class="progress-container">
+                        <div class="progress-label">
+                            <span>${stageLabel}</span>
+                            <span class="progress-percentage animating">${progress}%</span>
+                        </div>
+                        <div class="progress-bar-wrapper">
+                            <div class="progress-bar ${progressBarClass}" style="width: ${progress}%"></div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Remove animation class after animation completes
+            setTimeout(() => {
+                const percentageEl = resultDiv.querySelector('.progress-percentage');
+                if (percentageEl) {
+                    percentageEl.classList.remove('animating');
+                }
+            }, 500);
+        }
+
+        function fallbackToPolling(contentId) {
+            stopPolling();
+            pollStatus(contentId);
+        }
+
+        function pollStatus(contentId) {
+            pollingInterval = setInterval(async () => {
+                try {
+                    const response = await fetch(`${API_BASE}/api/content/${contentId}`);
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        let progress = 0;
+                        let stage = data.status;
+                        
+                        if (data.status === 'PENDING') progress = 10;
+                        else if (data.status === 'PROCESSING') progress = 60;
+                        else if (data.status === 'SAFE' || data.status === 'FLAGGED') progress = 100;
+
+                        if (progress > currentProgress) {
+                            currentProgress = progress;
+                            updateProgressBar(stage, progress, data.status);
+                        }
+
+                        if (data.status === 'SAFE' || data.status === 'FLAGGED') {
+                            stopPolling();
+                            showFinalResults(data);
+                        }
+                    }
+                } catch (error) {
+                    // Silently handle polling errors - fallback will retry
+                }
+            }, 2000);
+        }
+
+        function fetchFinalResults(contentId) {
+            fetch(`${API_BASE}/api/content/${contentId}`)
+                .then(response => {
+                    if (response.ok) {
+                        return response.json().then(data => {
+                            showFinalResults(data);
+                        });
+                    } else {
+                        showError('Failed to fetch results');
+                    }
+                })
+                .catch(error => {
+                    showError('Failed to fetch results');
+                });
+        }
+
+        function getScoreClass(score) {
+            if (score >= 0.7) return 'high';
+            if (score >= 0.4) return 'medium';
+            return 'low';
+        }
+
+        function showFinalResults(data) {
+            const resultDiv = document.getElementById('submitResult');
+            
+            const isSafe = data.status === 'SAFE';
+            const title = isSafe ? 'Content is Safe' : 'Content Flagged';
+            const message = isSafe 
+                ? 'Your content has been analyzed and appears to be safe for publication.'
+                : 'Your content has been flagged. Please review the scores below.';
+            
+            let scoresHtml = '';
+            if (data.scores) {
+                scoresHtml = `
+                    <div class="scores-grid">
+                        <div class="score-card">
+                            <div class="score-label">Toxicity</div>
+                            <div class="score-value ${getScoreClass(data.scores.toxicity)}">${(data.scores.toxicity * 100).toFixed(1)}%</div>
+                        </div>
+                        <div class="score-card">
+                            <div class="score-label">Hate Speech</div>
+                            <div class="score-value ${getScoreClass(data.scores.hate)}">${(data.scores.hate * 100).toFixed(1)}%</div>
+                        </div>
+                        <div class="score-card">
+                            <div class="score-label">Sexual Content</div>
+                            <div class="score-value ${getScoreClass(data.scores.sexual)}">${(data.scores.sexual * 100).toFixed(1)}%</div>
+                        </div>
+                        <div class="score-card">
+                            <div class="score-label">Violence</div>
+                            <div class="score-value ${getScoreClass(data.scores.violence)}">${(data.scores.violence * 100).toFixed(1)}%</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            resultDiv.innerHTML = `
+                <div class="result-card">
+                    <div class="result-header">
+                        <div class="result-title ${isSafe ? 'safe' : 'flagged'}">${title}</div>
+                        <div class="result-message">${message}</div>
+                    </div>
+                    ${scoresHtml}
+                </div>
+            `;
+
+            // Reset form
+            document.getElementById('submitForm').reset();
+            document.getElementById('textGroup').style.display = 'block';
+            document.getElementById('imageGroup').style.display = 'none';
+        }
+
+        function showError(message) {
+            const resultDiv = document.getElementById('submitResult');
+            resultDiv.innerHTML = `
+                <div class="error-card">
+                    <h4>⚠️ Error</h4>
+                    <p>${message}</p>
+                </div>
+            `;
+        }
+
+        async function submitContent(event) {
+            event.preventDefault();
+            stopPolling();
+            disconnectWebSocket();
+            currentProgress = 0;
+
+            const resultDiv = document.getElementById('submitResult');
+            const submitBtn = document.getElementById('submitBtn');
+            const submitBtnText = document.getElementById('submitBtnText');
+            
+            const contentType = document.getElementById('contentType').value;
+            const textContent = document.getElementById('textContent').value.trim();
+            const imageUrl = document.getElementById('imageUrl').value.trim();
+            
+            // Validate input
+            if (contentType === 'text' && !textContent) {
+                resultDiv.innerHTML = `
+                    <div class="error-card">
+                        <h4>⚠️ Validation Error</h4>
+                        <p>Please enter text content to analyze.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            if (contentType === 'image' && !imageUrl) {
+                resultDiv.innerHTML = `
+                    <div class="error-card">
+                        <h4>⚠️ Validation Error</h4>
+                        <p>Please enter an image URL to analyze.</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            submitBtn.disabled = true;
+            submitBtnText.textContent = 'Submitting...';
+            resultDiv.innerHTML = '';
+
+            const endpoint = contentType === 'text' ? '/api/content/text' : '/api/content/image';
+            const body = contentType === 'text' 
+                ? { user_id: 'anonymous', text: textContent }
+                : { user_id: 'anonymous', image_url: imageUrl };
+
+            try {
+                const response = await fetch(API_BASE + endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    const contentId = data.contentId;
+                    currentProgress = 10;
+                    updateProgressBar('PENDING', 10, 'PENDING');
+                    connectWebSocket(contentId);
+                    setTimeout(() => {
+                        if (!stompClient || !stompClient.connected) {
+                            fallbackToPolling(contentId);
+                        }
+                    }, 1000);
+                } else {
+                    resultDiv.innerHTML = `
+                        <div class="error-card">
+                            <h4>⚠️ Submission Failed</h4>
+                            <p>${data.message || 'Please try again later'}</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                resultDiv.innerHTML = `
+                    <div class="error-card">
+                        <h4>⚠️ Error</h4>
+                        <p>${error.message}</p>
+                    </div>
+                `;
+            } finally {
+                submitBtn.disabled = false;
+                submitBtnText.textContent = 'Analyze Content';
+            }
+        }
+
+        window.addEventListener('beforeunload', () => {
+            stopPolling();
+            disconnectWebSocket();
+        });
+
+        // Initialize form on page load
+        window.addEventListener('DOMContentLoaded', () => {
+            toggleContentInput();
+        });
+    </script>
+</body>
+</html>

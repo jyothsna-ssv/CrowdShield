@@ -1,0 +1,94 @@
+spring:
+  application:
+    name: crowdshield
+  
+  web:
+    resources:
+      add-mappings: true
+      static-locations: classpath:/static/
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/crowdshield
+    username: ${DB_USERNAME:karuparthijyothsna}
+    password: ${DB_PASSWORD:}
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 60000ms
+      lettuce:
+        pool:
+          max-active: 8
+          max-idle: 8
+          min-idle: 0
+        shutdown-timeout: 100ms
+
+server:
+  port: 8080
+
+logging:
+  level:
+    com.crowdshield: INFO
+    org.springframework.data.redis: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"
+
+# ML Moderation API Configuration (OpenAI)
+ml:
+  moderation:
+    api-key: ${ML_API_KEY:${OPENAI_API_KEY:}}
+    base-url: ${ML_API_URL:https://api.openai.com/v1}
+    timeout: 5000
+    retry:
+      max-attempts: 3
+      backoff:
+        initial: 1000
+        multiplier: 2
+
+# Queue Configuration
+queue:
+  names:
+    main: moderation:jobs
+    retry: moderation:retry
+    dlq: moderation:dlq
+  worker:
+    poll-timeout: 0
+    max-retries: 3
+
+# Rate Limiting
+rate-limit:
+  enabled: true
+  requests-per-minute: 100
+
+# Admin Configuration
+admin:
+  username: ${ADMIN_USERNAME:admin}
+  password: ${ADMIN_PASSWORD:admin123}
+
+# JWT Configuration
+jwt:
+  secret: ${JWT_SECRET:your-256-bit-secret-key-change-this-in-production-minimum-32-characters}
+  expiration: ${JWT_EXPIRATION:86400000} # 24 hours in milliseconds
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,info
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
