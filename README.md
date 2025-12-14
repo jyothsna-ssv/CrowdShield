@@ -1,6 +1,8 @@
 # CrowdShield, A Real-Time Content Moderation Platform
 
-![CrowdShield Hero](./images/CrowdShield-pic.png)
+ <p align="center">
+  <img src="images/CrowdShield-pic.png" alt="FlowStory App Banner" width="550" height ="800" />
+</p>
 
 Every platform today, whether it’s a chat app, marketplace, gaming platform, or social media site, faces the same growing problem:
 
